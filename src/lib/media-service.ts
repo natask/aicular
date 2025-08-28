@@ -108,7 +108,7 @@ export class MediaService {
       document.body.appendChild(this.videoElement);
 
       // Setup audio context
-      this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({
+      this.audioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)({
         sampleRate: this.config.audio.sampleRate
       });
 

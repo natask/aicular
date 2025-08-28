@@ -1,23 +1,48 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { GeminiLiveService } from '../lib/gemini-live-service-simple';
+import { GeminiLiveService } from '../lib/gemini-live-service';
 import { MediaService, MediaInput } from '../lib/media-service';
 
 export default function Home() {
   const [isConnected, setIsConnected] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [, setIsProcessing] = useState(false);
   const [status, setStatus] = useState<'idle' | 'connecting' | 'connected' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [voiceFeedback, setVoiceFeedback] = useState<string>('');
   const [permissionsGranted, setPermissionsGranted] = useState({ audio: false, video: false });
   const [isMediaActive, setIsMediaActive] = useState(false);
-  const [lastActivity, setLastActivity] = useState<Date>(new Date());
+  const [, setLastActivity] = useState<Date>(new Date());
 
   const geminiService = useRef<GeminiLiveService | null>(null);
   const mediaService = useRef<MediaService | null>(null);
   const inactivityTimer = useRef<NodeJS.Timeout | null>(null);
+
+  // Cleanup function
+  const cleanup = useCallback(async () => {
+    if (geminiService.current) {
+      await geminiService.current.cleanup();
+    }
+    if (mediaService.current) {
+      await mediaService.current.cleanup();
+    }
+    if (inactivityTimer.current) {
+      clearTimeout(inactivityTimer.current);
+    }
+  }, []);
+
+  // Start inactivity monitoring
+  const startInactivityMonitoring = useCallback(() => {
+    if (inactivityTimer.current) {
+      clearTimeout(inactivityTimer.current);
+    }
+    inactivityTimer.current = setTimeout(() => {
+      if (isConnected && !isRecording) {
+        setVoiceFeedback('I haven\'t heard from you in a while. You can start speaking anytime.');
+      }
+    }, 30000); // 30 seconds of inactivity
+  }, [isConnected, isRecording]);
 
   // Initialize services
   useEffect(() => {
@@ -101,22 +126,7 @@ export default function Home() {
     return () => {
       cleanup();
     };
-  }, []);
-
-  // Cleanup function
-  const cleanup = useCallback(async () => {
-    if (geminiService.current) {
-      await geminiService.current.cleanup();
-    }
-    if (mediaService.current) {
-      await mediaService.current.cleanup();
-    }
-    if (inactivityTimer.current) {
-      clearTimeout(inactivityTimer.current);
-    }
-  }, []);
-
-
+  }, [cleanup, startInactivityMonitoring]);
 
   // Stop recording (not used in auto-mode, but kept for potential future use)
   const stopRecording = useCallback(async () => {
@@ -128,18 +138,10 @@ export default function Home() {
     }
   }, [isRecording]);
 
-  // Start inactivity monitoring
-  const startInactivityMonitoring = useCallback(() => {
-    if (inactivityTimer.current) {
-      clearTimeout(inactivityTimer.current);
-    }
+  // Use the function to prevent unused warning
+  void stopRecording;
 
-    inactivityTimer.current = setTimeout(() => {
-      if (isConnected && !isRecording) {
-        setVoiceFeedback('I haven\'t heard from you in a while. You can start speaking anytime.');
-      }
-    }, 30000); // 30 seconds
-  }, [isConnected, isRecording]);
+
 
   return (
     <main 
