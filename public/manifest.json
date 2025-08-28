@@ -1,0 +1,41 @@
+{
+  "name": "AIcular - Blind Assistant",
+  "short_name": "AIcular",
+  "description": "AI-powered assistant for the blind using Gemini Live API",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["accessibility", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Start Listening",
+      "short_name": "Listen",
+      "description": "Activate voice recognition",
+      "url": "/?action=listen",
+      "icons": [
+        {
+          "src": "/icon-192x192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
